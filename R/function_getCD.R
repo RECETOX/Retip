@@ -52,13 +52,15 @@ getCD <- function(x){
 
   mols_x1 <- rcdk::parse.smiles(as.character(unlist(x_na_rem[1,"SMILES"])))[[1]]
   rcdk::convert.implicit.to.explicit(mols_x1)
-  descs_x_loop <- rcdk::eval.desc(mols_x1, descNames)
+  # leave out "org.openscience.cdk.qsar.descriptors.molecular.LongestAliphaticChainDescriptor
+  descs_x_loop <- rcdk::eval.desc(mols_x1, descNames[-20])
 
 
   for (i in 2:nrow(x_na_rem)) {
     mols <- rcdk::parse.smiles(as.character(unlist(x_na_rem[i,"SMILES"])))[[1]]
     rcdk::convert.implicit.to.explicit(mols)
-    descs_x_loop[i,] <- rcdk::eval.desc(mols, descNames)
+    # leave out "org.openscience.cdk.qsar.descriptors.molecular.LongestAliphaticChainDescriptor"
+    descs_x_loop[i,] <- rcdk::eval.desc(mols, descNames[-20])
     print(paste0(i," of ",nrow(x_na_rem)))
   }
   datadesc <- data.frame(x_na_rem,descs_x_loop)
