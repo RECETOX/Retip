@@ -2,6 +2,10 @@
 
 This is a fork of https://github.com/PaoloBnn/Retip to wrap Retip to be used from Galaxy
 
+## Images
+
+Built images are available at https://hub.docker.com/repository/docker/recetox/retip
+
 ## Build
 
     docker build -t CONTAINER/NAME:TAG .
