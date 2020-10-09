@@ -40,6 +40,7 @@ RUN Rscript -e "install.packages('readr',repos='${MIRROR}')"
 
 RUN apt -y install libhdf5-dev
 RUN Rscript -e "install.packages('hdf5r',repos='${MIRROR}')"
+RUN Rscript -e "install.packages('argparser',repos='${MIRROR}')"
 
 WORKDIR /
 
