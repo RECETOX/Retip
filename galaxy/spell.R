@@ -10,6 +10,7 @@ prep.wizard()
 desc <- H5File$new(args[1],mode="r")
 ds <- desc[["/desc"]]
 cleanTrain <- ds[]
+cleanTrain$SMILES <- NULL
 
 preProc <- cesc(cleanTrain)
 centerTrain <- predict(preProc,cleanTrain)

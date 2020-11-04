@@ -11,7 +11,8 @@ desc <- H5File$new(args[1],mode="r")
 ds <- desc[["/desc"]]
 cleanTrain <- ds[]
 #ht5attr_names(ds)
-row.names(cleanTrain) <- h5attr(ds,"rownames")
+row.names(cleanTrain) <- cleanTrain$SMILES
+cleanTrain$SMILES <- NULL
 
 preProc <- cesc(cleanTrain)
 centerTrain <- predict(preProc,cleanTrain)

@@ -9,17 +9,20 @@
 #' descs <- getCD(RP)
 #' descs <- getCD(HILIC)}
 
-
 getCD <- function(x){
+  library(foreach)
+  cores=parallel::detectCores() / 2 # FIXME: logical= doesnt work on linux, who cares?
+  cl <- parallel::makeCluster(cores[1])
+  doParallel::registerDoParallel(cl)
 
   print(paste0("Converting SMILES..."))
 
-  for (i in 1:nrow(x)) {
+  x$SMILES <- foreach (i=1:nrow(x),.combine=rbind, .packages=c("rcdk")) %dopar% {
     smi <- rcdk::parse.smiles(as.character(unlist(x[i,"SMILES"]))) [[1]]
     smi1 <- rcdk::generate.2d.coordinates(smi)
     smi1 <- rcdk::get.smiles(smi,smiles.flavors(c('CxSmiles')))
-    x$SMILES[i] <- smi1
-    print(paste0(i," of ",nrow(x)))
+    smi1
+#    print(paste0(i," of ",nrow(x)))
   }
 
 
@@ -34,10 +37,11 @@ getCD <- function(x){
   mols_x <- rcdk::parse.smiles(as.character(unlist(x[1,"SMILES"])))
   descs1_x <- rcdk::eval.desc(mols_x, descNames1)
 
-  for (i in 2:nrow(x)) {
+  descs1_x <- foreach (i=1:nrow(x),.combine=rbind, .packages=c("rcdk")) %dopar% {
     mols1 <- rcdk::parse.smiles(as.character(unlist(x[i,"SMILES"])))
-    descs1_x[i,] <- rcdk::eval.desc(mols1, descNames1)
-    print(paste0(i," of ",nrow(x)))
+    rcdk::eval.desc(mols1, descNames1)
+#    descs1_x[i,] <- rcdk::eval.desc(mols1, descNames1)
+#    print(paste0(i," of ",nrow(x)))
   }
 
   # remove molecules that have NA values with only one descriptor
@@ -56,14 +60,17 @@ getCD <- function(x){
   descs_x_loop <- rcdk::eval.desc(mols_x1, descNames[-20])
 
 
-  for (i in 2:nrow(x_na_rem)) {
+  descs_x_loop <- foreach (i=1:nrow(x_na_rem),.combine=rbind,.packages=c("rcdk")) %dopar% {
     mols <- rcdk::parse.smiles(as.character(unlist(x_na_rem[i,"SMILES"])))[[1]]
     rcdk::convert.implicit.to.explicit(mols)
     # leave out "org.openscience.cdk.qsar.descriptors.molecular.LongestAliphaticChainDescriptor"
-    descs_x_loop[i,] <- rcdk::eval.desc(mols, descNames[-20])
-    print(paste0(i," of ",nrow(x_na_rem)))
+#    descs_x_loop[i,] <- rcdk::eval.desc(mols, descNames[-20])
+     rcdk::eval.desc(mols, descNames[-20])
+#    print(paste0(i," of ",nrow(x_na_rem)))
   }
   datadesc <- data.frame(x_na_rem,descs_x_loop)
+
+  parallel::stopCluster(cl)
   return(datadesc)
 }
 
