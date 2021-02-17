@@ -5,8 +5,9 @@ library(readr)
 # path and dataset name (XXX: hardcoded in xMSAnnotator)
 ds.name = "/annotation"
 
-# column name to hope for SMILES
-smiles.name = "compound"
+# XXX: columns to feed to retip: it wants Name, InChIKey, SMILES but does not use the first two
+# and this is what we have
+columns = c("molecular_formula","molecular_formula","qsar_smiles")
 
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 4) stop("usage: spell_h5.R descr-train.h5 model.h5 in.h5 out.h5") 
@@ -35,7 +36,7 @@ data.h5 <- H5File$new(args[3],mode="r")
 data.ds <- data.h5[[ds.name]]
 full.data <- data.ds[]
 
-data <- full.data[,c(smiles.name,smiles.name,smiles.name)]
+data <- full.data[,columns]
 
 # XXX: rename to what Retip expects
 names(data) <- c("Name","InChIKey","SMILES")
