@@ -44,9 +44,17 @@ desc <- getCD(data)
 
 rt <- RT.spell(training,desc,model=keras,cesc=preProc)
 
-full.data$rtp <- rt[,"RTP"]
+good <- which(full.data$molecular_formula %in% rt$Name)
+out.data <- full.data[good,]
+
+out.data$rtp <- rt[,"RTP"]
+
+print(paste0("input rows: ",nrow(full.data)))
+print(paste0("descriptors computed: ",nrow(desc)))
+print(paste0("RT predicted: ",nrow(rt)))
+print(paste0("output rows: ",nrow(out.data)))
 
 out=H5File$new(args[4],mode="w")
-out[[ds.name]] <- full.data
+out[[ds.name]] <- out.data
 out$close_all()
 
