@@ -5,6 +5,8 @@ library(readr)
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 4) stop("usage: spell.R descr-train.h5 model.h5 in.tsv out.tsv") 
 
+columns = c("molecular_formula","molecular_formula","qsar_smiles")
+
 prep.wizard()
 
 desc <- H5File$new(args[1],mode="r")
@@ -25,11 +27,20 @@ keras <- load_model_hdf5(args[2])
 
 full.data <- read_tsv(args[3])
 
-data <- full.data[,c("Name","InChIKey","SMILES")]
+data <- full.data[,columns]
+names(data) <- c("Name","InChIKey","SMILES")
 desc <- getCD(data)
 
 rt <- RT.spell(training,desc,model=keras,cesc=preProc)
 
-full.data$RTP <- rt[,"RTP"]
+good <- which(full.data$molecular_formula %in% rt$Name)
+out.data <- full.data[good,]
 
-write_tsv(full.data,args[4])
+out.data$rtp <- rt[,"RTP"]
+
+print(paste0("input rows: ",nrow(full.data)))
+print(paste0("descriptors computed: ",nrow(desc)))
+print(paste0("RT predicted: ",nrow(rt)))
+print(paste0("output rows: ",nrow(out.data)))
+
+write_tsv(out.data,args[4])
