@@ -9,10 +9,9 @@
 #' descs <- getCD(RP)
 #' descs <- getCD(HILIC)}
 
-getCD <- function(x){
+getCD <- function(x,cores=1){
   library(foreach)
-  cores=parallel::detectCores() / 2 # FIXME: logical= doesnt work on linux, who cares?
-  cl <- parallel::makeCluster(cores[1])
+  cl <- parallel::makeCluster(cores)
   doParallel::registerDoParallel(cl)
 
   print(paste0("Converting SMILES..."))
