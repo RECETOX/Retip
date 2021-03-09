@@ -1,17 +1,18 @@
+library(hdf5r)
 source('/Retip/spell_common.R')
 
 # path and dataset name (XXX: hardcoded in xMSAnnotator)
-ds.name = "/annotation"
 
 prase = my.options()
 opt = parse_args(prase)
 
-if (is.null(opt$desc) | is.null(opt$model) | is.null(opt$inp) | is.null(opt$out)) {
+if (is.null(opt$desc) | is.null(opt$model) | is.null(opt$inp) | is.null(opt$out) | is.null(opt$ds)) {
 	print_help(prase)
 	stop("Missing mandatory inputs")
 }
 
-data.h5 <- H5File$new(opt$inp],mode="r")
+ds.name = opt$ds
+data.h5 <- H5File$new(opt$inp,mode="r")
 data.ds <- data.h5[[ds.name]]
 full.data <- data.ds[]
 
