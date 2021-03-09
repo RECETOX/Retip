@@ -28,7 +28,7 @@ if (argv$mode == "absolute") {
 	print("selection:")
 	print(sel)
 	filtered <- full.data[ sel, ]
-	dropped <- full.data[ -sel, ]
+	dropped <- full.data[ !sel, ]
 } else if (argv$mode == "relative") {
 	min.rt <- min(full.data[[rt.name]])
 	max.rt <- max(full.data[[rt.name]])
@@ -42,19 +42,23 @@ if (argv$mode == "absolute") {
 	if (min.rt == max.rt | min.rtp == max.rtp) stop("relative mission impossible, min == max")
 
 	norm.rt <- (full.data[[rt.name]] - min.rt)/(max.rt - min.rt)
+	full.data$norm_rt <- norm.rt
 	print("normalized rt:")
 	print(norm.rt)
 	norm.rtp <- (full.data[[rtp.name]] - min.rtp)/(max.rtp - min.rtp)
+	full.data$norm_rtp <- norm.rtp
 	print("normalized rtp:")
 	print(norm.rtp)
 	sel <- abs(norm.rt - norm.rtp)/norm.rt < tol
 	print("selection:")
 	print(sel)
 	filtered <- full.data[ sel, ]
-	dropped <- full.data[ -sel, ]
+	dropped <- full.data[ !sel, ]
 } else if (argv$mode == "order") {
-	order.rt <- sort.list(full.data[[rt.name]])
-	order.rtp <- sort.list(full.data[[rtp.name]])
+	order.rt <- rank(full.data[[rt.name]])
+	full.data$rt_rank <- order.rt
+	order.rtp <- rank(full.data[[rtp.name]])
+	full.data$rtp_rank <- order.rtp
 	print("rt order:")
 	print(order.rt)
 	print("rtp order:")
@@ -63,7 +67,7 @@ if (argv$mode == "absolute") {
 	print("selection:")
 	print(sel)
 	filtered <- full.data[ sel, ]
-	dropped <- full.data[ -sel, ]
+	dropped <- full.data[ !sel, ]
 } else {
 	stop("invalid --mode")
 }
