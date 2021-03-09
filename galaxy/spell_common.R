@@ -51,6 +51,8 @@ my.spell <- function(desc.f,model.f,full.data,smiles.col,name.col,cores=1) {
 my.options <- function() {
 	library(optparse)
 	return(OptionParser(option_list = list(
+		make_option("--ids",type="character",default="/annotations",help="name of input dataset"),
+		make_option("--ods",type="character",default="/annotations",help="name of output dataset"),
 		make_option("--name",type="character",default="recetox_cid",help="name of column to identify compound"),
 		make_option("--smiles",type="character",default="qsar_smiles",help="name of column with SMILES"),
 		make_option("--desc",type="character",default=NULL,help="Retip chemical descriptors"),
