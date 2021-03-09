@@ -6,7 +6,7 @@ my.spell <- function(desc.f,model.f,full.data,smiles.col,name.col,cores=1) {
 	
 	columns = c(name.col, name.col, smiles.col)
 	
-	prep.wizard()
+#	prep.wizard()
 	
 	desc <- H5File$new(desc.f,mode="r")
 	ds <- desc[["/desc"]]
