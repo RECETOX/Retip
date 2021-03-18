@@ -54,6 +54,9 @@ RUN apt -y clean
 RUN chmod go+x /root
 
 RUN mkdir /Retip
+
+RUN Rscript -e "install.packages('optparse',repos='${MIRROR}')"
+
 COPY galaxy/*.R /Retip/
 COPY galaxy/run.sh /
 

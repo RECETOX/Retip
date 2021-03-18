@@ -1,30 +1,25 @@
-library(Retip)
-library(hdf5r)
+library(readr)
 library(argparser)
 
 ds.name = "/annotation"	# xMSAnnotator
-rt.name = "rt"
-rtp.name = "rtp"
-
 p <- arg_parser("filter_rt.R")
-p <- add_argument(p,c("--tolerance","--mode","input","output"),
-			default=list(10,"absolute","in.h5","out.h5"),
+p <- add_argument(p,c("--tolerance","--mode","--rt","--rtp","input","output","drop"),
+			default=list(10,"absolute","rt","rtp","in.tsv","out.tsv","drop.tsv"),
 			help=c("tolerance of RT difference in %",
 				"mode of operation: absolute, relative (min-max), order",
-				"input file", "output file")
+				"column with experimental RT", "column with predicted RT",
+				"input file", "output file", "dropped file")
 )
 
 argv <- parse_args(p,commandArgs(trailingOnly = TRUE))
 # if (length(args) != 3) stop("usage: filter_rt.R tolerance in.h5 out.h5") 
 
-data.h5 <- H5File$new(argv$input,mode="r")
-data.ds <- data.h5[[ds.name]]
-full.data <- data.ds[]
+rt.name = argv$rt
+rtp.name = argv$rtp
+
+full.data <- read_tsv(argv$input)
 
 tol <- as.numeric(argv$tolerance) / 100.
-
-# XXX: hardcoded column names
-# rt from xMSAnnotator, rtp from spell_h5.R
 
 if (is.null(full.data[[rt.name]]) | is.null(full.data[[rtp.name]])) stop(argv$input, ": must contain ",rt.name," and ",rtp.name," columns")
 
@@ -33,6 +28,7 @@ if (argv$mode == "absolute") {
 	print("selection:")
 	print(sel)
 	filtered <- full.data[ sel, ]
+	dropped <- full.data[ !sel, ]
 } else if (argv$mode == "relative") {
 	min.rt <- min(full.data[[rt.name]])
 	max.rt <- max(full.data[[rt.name]])
@@ -46,18 +42,23 @@ if (argv$mode == "absolute") {
 	if (min.rt == max.rt | min.rtp == max.rtp) stop("relative mission impossible, min == max")
 
 	norm.rt <- (full.data[[rt.name]] - min.rt)/(max.rt - min.rt)
+	full.data$norm_rt <- norm.rt
 	print("normalized rt:")
 	print(norm.rt)
 	norm.rtp <- (full.data[[rtp.name]] - min.rtp)/(max.rtp - min.rtp)
+	full.data$norm_rtp <- norm.rtp
 	print("normalized rtp:")
 	print(norm.rtp)
 	sel <- abs(norm.rt - norm.rtp)/norm.rt < tol
 	print("selection:")
 	print(sel)
 	filtered <- full.data[ sel, ]
+	dropped <- full.data[ !sel, ]
 } else if (argv$mode == "order") {
-	order.rt <- sort.list(full.data[[rt.name]])
-	order.rtp <- sort.list(full.data[[rtp.name]])
+	order.rt <- rank(full.data[[rt.name]])
+	full.data$rt_rank <- order.rt
+	order.rtp <- rank(full.data[[rtp.name]])
+	full.data$rtp_rank <- order.rtp
 	print("rt order:")
 	print(order.rt)
 	print("rtp order:")
@@ -66,11 +67,10 @@ if (argv$mode == "absolute") {
 	print("selection:")
 	print(sel)
 	filtered <- full.data[ sel, ]
+	dropped <- full.data[ !sel, ]
 } else {
 	stop("invalid --mode")
 }
 	
-
-out=H5File$new(argv$output,mode="w")
-out[[ds.name]] <- filtered
-out$close_all()
+write_tsv(filtered,argv$output)
+write_tsv(dropped,argv$drop)
